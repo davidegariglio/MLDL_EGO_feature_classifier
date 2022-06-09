@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    source_features_path = f'/content/drive/MyDrive/MLDL_2022/project/EGO_project/Pre-extracted_feat/{args.modality}/ek_{args.backbone}/D{args.source}-D{args.target}_train.pkl'
+    source_features_path = f'/content/drive/MyDrive/MLDL_2022/project/EGO_project/Pre-extracted_feat/{args.modality}/ek_{args.backbone}/D{args.source}-D{args.source}_train.pkl'
 
     # *** TRAIN pkls***
 
@@ -25,25 +25,30 @@ if __name__ == "__main__":
         p = pkl.load(f)
 
     train_input_feat = p['features']['RGB']
-    train_input_ids = p['narration_ids'].split('_')[-1]
+    train_input_ids = []
+    for identifier in p['narration_ids']:
+        train_input_ids.append(identifier.split('_')[-1])
+     
+    
+    print(train_input_ids)
 
     train_labels_path = f'/content/drive/MyDrive/MLDL_2022/project/pkl_files/D{args.source}_train.pkl'
 
     # TODO: legegre pkls test e fare join per prendere label (sia per train che per test)
     # *** TEST pkls***
 
-    target_features_path = f'/content/drive/MyDrive/MLDL_2022/project/EGO_project/Pre-extracted_feat/{args.modality}/ek_{args.backbone}/D{args.target}-D{args.target}_train.pkl'
+    # target_features_path = f'/content/drive/MyDrive/MLDL_2022/project/EGO_project/Pre-extracted_feat/{args.modality}/ek_{args.backbone}/D{args.target}-D{args.target}_train.pkl'
 
-    with open(source_features_path, "rb") as f:
-        p = pkl.load(f)
+    # with open(source_features_path, "rb") as f:
+    #     p = pkl.load(f)
 
-    train_input_feat = p['features']['RGB']
-    train_input_ids = p['narration_ids'].split('_')[-1]
+    # train_input_feat = p['features']['RGB']
+    # train_input_ids = p['narration_ids'].split('_')[-1]
 
-    train_labels_path = f'/content/drive/MyDrive/MLDL_2022/project/pkl_files/D{args.source}_train.pkl'
+    # train_labels_path = f'/content/drive/MyDrive/MLDL_2022/project/pkl_files/D{args.source}_train.pkl'
 
 
-    print(train_input_ids)
+    # print(train_input_ids)
 
 
         #out = trm()
