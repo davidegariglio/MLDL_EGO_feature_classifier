@@ -1,6 +1,7 @@
 import torch
+from torch.utils.data import Dataset
 
-class Dataset(torch.utils.data.Dataset):
+class PersonalizedDataset(Dataset):
   'Characterizes a dataset for PyTorch'
   def __init__(self, records, labels):
         'Initialization'
