@@ -46,6 +46,7 @@ class RelationModuleMultiScaleWithClassifier(torch.nn.Module):
         print(['%d-frame relation' % i for i in self.scales])
 
     def forward(self, input):
+        print(input[0].shape, input[0])
         # the first one is the largest scale
         act_all = input[:, self.relations_scales[0][0] , :]
         act_all = act_all.view(act_all.size(0), self.scales[0] * self.img_feature_dim)
