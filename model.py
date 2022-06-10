@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     train_input_feat = p['features']['RGB']
     train_input_feat= torch.from_numpy(train_input_feat).type(torch.float32)
-    train_input_feat.to(device)
+    train_input_feat = train_input_feat.to(device)
     trm.to(device)
     train_input_ids = []
     # for identifier in p['narration_ids']:
@@ -47,23 +47,23 @@ if __name__ == "__main__":
     labels = df['verb_class'].astype(float)
     labels = labels.to_numpy()
     labels = torch.from_numpy(labels).type(torch.LongTensor)
-    labels.to(device)
+    labels = labels.to(device)
 
     # AVG POOL not needed now since we are trying trm
     # data = torch.mean(train_input_feat, 1)
     
     train_dataset = PersonalizedDataset(train_input_feat, labels)
-    train_loader = DataLoader(train_dataset, batch_size = 4, shuffle = True)
+    train_loader = DataLoader(train_dataset, batch_size = 32, shuffle = True)
+    
+
     # *** TRAINING ***
 
     # Define the loss
     loss_criterion = nn.CrossEntropyLoss()
-
     # Define the optimizer
-    lr = 0.01
+    lr = 0.001
     optim = torch.optim.SGD(trm.parameters(), lr = lr, momentum = 0.9) #stochastic gradient descent
-
-    epochs = 1
+    epochs = 30
     for epoch in range(epochs):
       print(epoch)
       for i, batch_images in enumerate(train_loader):
@@ -89,8 +89,6 @@ if __name__ == "__main__":
 
     test_input_feat = p['features']['RGB']
     test_input_feat= torch.from_numpy(test_input_feat).type(torch.float32)
-    test_input_feat.to(device)
-    print(test_input_feat.is_cuda)
     test_labels_path = f'/content/drive/MyDrive/MLDL_2022/project/pkl_files/D{args.source}_test.pkl'
 
     with open(test_labels_path, "rb") as f:
@@ -100,14 +98,14 @@ if __name__ == "__main__":
     test_labels = df['verb_class'].astype(float)
     test_labels = test_labels.to_numpy()
     test_labels = torch.from_numpy(test_labels).type(torch.LongTensor)
-    test_labels.to(device)
     # AVG POOL not needed now since we are trying trm
     # data = torch.mean(train_input_feat, 1)
-    
+    test_input_feat = test_input_feat.to(device)
+    test_labels = test_labels.to(device)
     test_dataset = PersonalizedDataset(test_input_feat, test_labels)
     test_loader = DataLoader(test_dataset, batch_size = 4, shuffle = True)
 
-    # *** TESTIN ***
+    # *** TESTING ***
 
     correct = 0
     total = 0
