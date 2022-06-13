@@ -13,16 +13,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    num_frames = 5 # I3D vs TSM
-    num_class = 8 # 8????
-    img_feature_dim = 2048 # 1024 i3d, 2048 tsm
-
-    #if trm oppure avg
-    trm = RelationModuleMultiScaleWithClassifier(img_feature_dim, num_frames, num_class)
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    source_features_path = f'/content/drive/MyDrive/MLDL_2022/project/EGO_project/Pre-extracted_feat/{args.modality}/ek_{args.backbone}/D{args.source}-D{args.source}_train.pkl'
+    source_features_path = f'/content/drive/MyDrive/MLDL_2022/project/EGO_project/Pre-extracted_feat/{args.modality}/ek_{args.backbone}/D{args.source}-D{args.target}_train.pkl'
 
     # *** TRAIN pkls***
 
@@ -32,7 +25,7 @@ if __name__ == "__main__":
     train_input_feat = p['features']['RGB']
     train_input_feat= torch.from_numpy(train_input_feat).type(torch.float32)
     train_input_feat = train_input_feat.to(device)
-    trm.to(device)
+    
     train_input_ids = []
     # for identifier in p['narration_ids']:
     #     train_input_ids.append(identifier.split('_')[-1])
@@ -49,8 +42,17 @@ if __name__ == "__main__":
     labels = torch.from_numpy(labels).type(torch.LongTensor)
     labels = labels.to(device)
 
-    # AVG POOL not needed now since we are trying trm
-    # data = torch.mean(train_input_feat, 1)
+    if args.backbone == 'tsm':
+      num_frames = 5 # I3D vs TSM
+      num_class = 8 # 8????
+      img_feature_dim = 2048
+      trm = RelationModuleMultiScaleWithClassifier(img_feature_dim, num_frames, num_class)
+      trm.to(device)
+    else:
+      num_frames = 5 # I3D vs TSM
+      num_class = 8 # 8????
+      img_feature_dim = 1024
+      data = torch.mean(train_input_feat, 1)
     
     train_dataset = PersonalizedDataset(train_input_feat, labels)
     train_loader = DataLoader(train_dataset, batch_size = 32, shuffle = True)
@@ -82,14 +84,14 @@ if __name__ == "__main__":
         
     # *** TEST pkls***
 
-    target_features_path = f'/content/drive/MyDrive/MLDL_2022/project/EGO_project/Pre-extracted_feat/{args.modality}/ek_{args.backbone}/D{args.target}-D{args.target}_test.pkl'
+    target_features_path = f'/content/drive/MyDrive/MLDL_2022/project/EGO_project/Pre-extracted_feat/{args.modality}/ek_{args.backbone}/D{args.source}-D{args.target}_test.pkl'
 
     with open(target_features_path, "rb") as f:
         p = pkl.load(f)
 
     test_input_feat = p['features']['RGB']
     test_input_feat= torch.from_numpy(test_input_feat).type(torch.float32)
-    test_labels_path = f'/content/drive/MyDrive/MLDL_2022/project/pkl_files/D{args.source}_test.pkl'
+    test_labels_path = f'/content/drive/MyDrive/MLDL_2022/project/pkl_files/D{args.target}_test.pkl'
 
     with open(test_labels_path, "rb") as f:
         p = pkl.load(f)
