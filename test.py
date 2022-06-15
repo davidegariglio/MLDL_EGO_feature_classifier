@@ -5,6 +5,7 @@ import numpy as np
 from torch.utils.data import DataLoader
 import torch.nn as nn
 from models import RelationModuleMultiScaleWithClassifier
+from models import Baseline_AvgPool_Classifier
 from args import parser
 from data.dataset import PersonalizedDataset
 
@@ -98,6 +99,7 @@ if __name__ == "__main__":
       num_frames = 5
       num_class = 8
       img_feature_dim = 1024
+      # model = Baseline_AvgPool_Classifier(img_feature_dim, num_class)
       data = torch.mean(train_input_feat, 1)
     
     train_dataset = PersonalizedDataset(train_input_feat, labels)
