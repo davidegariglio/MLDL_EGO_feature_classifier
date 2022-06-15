@@ -1,4 +1,3 @@
-from typing_extensions import ParamSpecArgs
 import torch
 import pickle as pkl
 import pandas as pd
@@ -72,8 +71,11 @@ if __name__ == "__main__":
     lr = 0.001
     optim = torch.optim.SGD(trm.parameters(), lr = lr, momentum = 0.9) #stochastic gradient descent
     epochs = 30
+    total_step = len(train_loader)
+    train_loss = []
     for epoch in range(epochs):
       print(epoch)
+      running_loss = 0.0
       for i, batch_images in enumerate(train_loader):
         feat, lbl = batch_images
         # move images to gpu
@@ -87,7 +89,15 @@ if __name__ == "__main__":
         # backward the error to the model
         loss.backward()
         optim.step()
-        
+        running_loss += loss.item()
+
+        if (i) % 20 == 0:
+          print(f'Loss: {loss.item()}')
+
+      train_loss.append(running_loss/total_step)
+
+    print(f'\ntrain loss: {np.mean(train_loss):.4f}')
+
     # *** TEST pkls***
 
 
