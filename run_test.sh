@@ -2,10 +2,10 @@
 
 set -ex
 
-path_test=MLDL_EGO_Project/test.py
+path_test=MLDL_EGO_feature_classifier/test.py
 
 python -u $path_test \
---backbone i3d \
---modality RGB\
---source 3\
---target 3\
+--backbone tsm \
+--modality RGB \
+--source 3 \
+--target 3 \

@@ -1,21 +1,34 @@
-# imports
+from typing_extensions import ParamSpecArgs
 import torch
 import pickle as pkl
 import pandas as pd
 import numpy as np
 from torch.utils.data import DataLoader
 import torch.nn as nn
-from TRNmodule import RelationModuleMultiScaleWithClassifier
+from models import RelationModuleMultiScaleWithClassifier
 from args import parser
 from data.dataset import PersonalizedDataset
 
 if __name__ == "__main__":
 
+
+    def train():
+      # TODO
+      pass
+
+    def test():
+      # TODO
+      pass
+    
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    source_features_path = f'/content/drive/MyDrive/MLDL_2022/project/EGO_project/Pre-extracted_feat/{args.modality}/ek_{args.backbone}/D{args.source}-D{args.target}_train.pkl'
+    source_features_path = f'/content/drive/MyDrive/MLDL_2022/project/EGO_Project_correct/Pre-extracted_feat/{args.modality}/ek_{args.backbone}/D{args.source}-D{args.target}_train.pkl'
+    train_labels_path = f'/content/drive/MyDrive/MLDL_2022/project/pkl_files/D{args.source}_train.pkl'
+
+    target_features_path = f'/content/drive/MyDrive/MLDL_2022/project/EGO_project/Pre-extracted_feat/{args.modality}/ek_{args.backbone}/D{args.source}-D{args.target}_test.pkl'
+    test_labels_path = f'/content/drive/MyDrive/MLDL_2022/project/pkl_files/D{args.target}_test.pkl'
 
     # *** TRAIN pkls***
 
@@ -25,13 +38,7 @@ if __name__ == "__main__":
     train_input_feat = p['features']['RGB']
     train_input_feat= torch.from_numpy(train_input_feat).type(torch.float32)
     train_input_feat = train_input_feat.to(device)
-    
-    train_input_ids = []
-    # for identifier in p['narration_ids']:
-    #     train_input_ids.append(identifier.split('_')[-1])
-    # extract source labels in order to fit the classifier
 
-    train_labels_path = f'/content/drive/MyDrive/MLDL_2022/project/pkl_files/D{args.source}_train.pkl'
 
     with open(train_labels_path, "rb") as f:
         p = pkl.load(f)
@@ -43,20 +50,19 @@ if __name__ == "__main__":
     labels = labels.to(device)
 
     if args.backbone == 'tsm':
-      num_frames = 5 # I3D vs TSM
-      num_class = 8 # 8????
+      num_frames = 5 
+      num_class = 8
       img_feature_dim = 2048
       trm = RelationModuleMultiScaleWithClassifier(img_feature_dim, num_frames, num_class)
       trm.to(device)
     else:
-      num_frames = 5 # I3D vs TSM
-      num_class = 8 # 8????
+      num_frames = 5
+      num_class = 8
       img_feature_dim = 1024
       data = torch.mean(train_input_feat, 1)
     
     train_dataset = PersonalizedDataset(train_input_feat, labels)
-    train_loader = DataLoader(train_dataset, batch_size = 32, shuffle = True)
-    
+    train_loader = DataLoader(train_dataset, batch_size = 128, shuffle = True)
 
     # *** TRAINING ***
 
@@ -84,14 +90,12 @@ if __name__ == "__main__":
         
     # *** TEST pkls***
 
-    target_features_path = f'/content/drive/MyDrive/MLDL_2022/project/EGO_project/Pre-extracted_feat/{args.modality}/ek_{args.backbone}/D{args.source}-D{args.target}_test.pkl'
 
     with open(target_features_path, "rb") as f:
         p = pkl.load(f)
 
     test_input_feat = p['features']['RGB']
     test_input_feat= torch.from_numpy(test_input_feat).type(torch.float32)
-    test_labels_path = f'/content/drive/MyDrive/MLDL_2022/project/pkl_files/D{args.target}_test.pkl'
 
     with open(test_labels_path, "rb") as f:
         p = pkl.load(f)
@@ -105,7 +109,7 @@ if __name__ == "__main__":
     test_input_feat = test_input_feat.to(device)
     test_labels = test_labels.to(device)
     test_dataset = PersonalizedDataset(test_input_feat, test_labels)
-    test_loader = DataLoader(test_dataset, batch_size = 4, shuffle = True)
+    test_loader = DataLoader(test_dataset, batch_size = 64)
 
     # *** TESTING ***
 
