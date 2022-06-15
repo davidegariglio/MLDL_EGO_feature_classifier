@@ -12,8 +12,38 @@ if __name__ == "__main__":
 
 
     def train():
-      # TODO
-      pass
+      # Define the loss
+      loss_criterion = nn.CrossEntropyLoss()
+      # Define the optimizer
+      lr = 0.001
+      optim = torch.optim.SGD(trm.parameters(), lr = lr, momentum = 0.9) #stochastic gradient descent
+      epochs = 30
+      total_step = len(train_loader)
+      train_loss = []
+      for epoch in range(epochs):
+        print(epoch)
+        running_loss = 0.0
+        for i, batch_images in enumerate(train_loader):
+          feat, lbl = batch_images
+          # move images to gpu
+          feat, lbl = feat.cuda(), lbl.cuda()
+
+          optim.zero_grad() #at each iteration we zero grad the gradient
+
+          out = trm(feat)
+
+          loss = loss_criterion(out, lbl)
+          # backward the error to the model
+          loss.backward()
+          optim.step()
+          running_loss += loss.item()
+
+          if (i) % 20 == 0:
+            print(f'Loss: {loss.item()}')
+
+        train_loss.append(running_loss/total_step)
+
+      print(f'\ntrain loss: {np.mean(train_loss):.4f}')
 
     def test():
       # TODO
@@ -64,39 +94,8 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_dataset, batch_size = 128, shuffle = True)
 
     # *** TRAINING ***
-
-    # Define the loss
-    loss_criterion = nn.CrossEntropyLoss()
-    # Define the optimizer
-    lr = 0.001
-    optim = torch.optim.SGD(trm.parameters(), lr = lr, momentum = 0.9) #stochastic gradient descent
-    epochs = 30
-    total_step = len(train_loader)
-    train_loss = []
-    for epoch in range(epochs):
-      print(epoch)
-      running_loss = 0.0
-      for i, batch_images in enumerate(train_loader):
-        feat, lbl = batch_images
-        # move images to gpu
-        feat, lbl = feat.cuda(), lbl.cuda()
-
-        optim.zero_grad() #at each iteration we zero grad the gradient
-
-        out = trm(feat)
-
-        loss = loss_criterion(out, lbl)
-        # backward the error to the model
-        loss.backward()
-        optim.step()
-        running_loss += loss.item()
-
-        if (i) % 20 == 0:
-          print(f'Loss: {loss.item()}')
-
-      train_loss.append(running_loss/total_step)
-
-    print(f'\ntrain loss: {np.mean(train_loss):.4f}')
+    train()
+   
 
     # *** TEST pkls***
 
