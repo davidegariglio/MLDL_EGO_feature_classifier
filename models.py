@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torch.nn as nn
-
 import numpy as np
 import pdb
 
@@ -15,29 +14,42 @@ class Baseline_AvgPool_Classifier(torch.nn.Module):
       self.num_class = num_class
       num_bottleneck = 256
 
-      fc_fusion = nn.Sequential(
-                        nn.ReLU(),
-                        nn.Linear(self.img_feature_dim, num_bottleneck),
-                        nn.ReLU(),
-                        nn.Dropout(p=0.6),# this is the newly added thing
-                        nn.Linear(num_bottleneck, num_bottleneck),
-                        nn.ReLU(),
-                        nn.Dropout(p=0.6),
-                        )
+      self.avg_pool = nn.AvgPool1d(kernel_size=(8), stride=(1), padding=(0))
+      self.bn = nn.BatchNorm1d(5, eps=0.001, momentum=0.01)
+      self.flatten = nn.Flatten()
+      self.dropout = nn.Dropout(p=0.5)
+      self.dense = nn.Linear(5*1017, 8)
+    
+    def forward(self, x):
+      x = self.avg_pool(x)
+      x = self.bn(x)
+      x = self.flatten(x)
+      x = self.dropout(x)
+      x = self.dense(x)
 
-      classifier = nn.Linear(num_bottleneck, self.num_class)
-      # maybe we put another fc layer after the summed up results???
+      return x
 
 
-    def forward(self, input):
-        # the first one is the largest scale
-        act_all = input.view(input.size(0), self.img_feature_dim)
+    #   fc_fusion = nn.Sequential(
+    #                     nn.ReLU(),
+    #                     nn.Linear(self.img_feature_dim, num_bottleneck),
+    #                     nn.ReLU(),
+    #                     nn.Dropout(p=0.6),# this is the newly added thing
+    #                     nn.Linear(num_bottleneck, num_bottleneck),
+    #                     nn.ReLU(),
+    #                     nn.Dropout(p=0.6),
+    #                     )
 
-        return act_all
+    #   classifier = nn.Linear(num_bottleneck, self.num_class)
+    #   # maybe we put another fc layer after the summed up results???
 
-    def return_relationset(self, num_frames, num_frames_relation):
-        import itertools
-        return list(itertools.combinations([i for i in range(num_frames)], num_frames_relation))
+
+    # def forward(self, input):
+    #     # the first one is the largest scale
+    #     act_all = input.view(input.size(0), self.img_feature_dim)
+
+    #     return act_all
+
 
 class RelationModuleMultiScaleWithClassifier(torch.nn.Module):
     # relation module in multi-scale with a classifier at the end

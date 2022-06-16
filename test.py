@@ -20,7 +20,6 @@ if __name__ == "__main__":
       total_step = len(train_loader)
       train_loss = []
       for epoch in range(epochs):
-        print(epoch)
         running_loss = 0.0
         for i, batch_images in enumerate(train_loader):
           feat, lbl = batch_images
@@ -37,8 +36,8 @@ if __name__ == "__main__":
           optim.step()
           running_loss += loss.item()
 
-          if (i) % 20 == 0:
-            print(f'Loss: {loss.item()}')
+          if ((i) % len(train_loader) == 0):
+            print(f'Epoch: {epoch+1}\tLoss: {loss.item()}')
 
         train_loss.append(running_loss/total_step)
 
@@ -67,7 +66,7 @@ if __name__ == "__main__":
     source_features_path = f'/content/drive/MyDrive/MLDL_2022/project/EGO_Project_correct/Pre-extracted_feat/{args.modality}/ek_{args.backbone}/D{args.source}-D{args.target}_train.pkl'
     train_labels_path = f'/content/drive/MyDrive/MLDL_2022/project/pkl_files/D{args.source}_train.pkl'
 
-    target_features_path = f'/content/drive/MyDrive/MLDL_2022/project/EGO_project/Pre-extracted_feat/{args.modality}/ek_{args.backbone}/D{args.source}-D{args.target}_test.pkl'
+    target_features_path = f'/content/drive/MyDrive/MLDL_2022/project/EGO_Project_correct/Pre-extracted_feat/{args.modality}/ek_{args.backbone}/D{args.source}-D{args.target}_test.pkl'
     test_labels_path = f'/content/drive/MyDrive/MLDL_2022/project/pkl_files/D{args.target}_test.pkl'
 
     # *** TRAIN pkls***
@@ -75,7 +74,7 @@ if __name__ == "__main__":
     with open(source_features_path, "rb") as f:
         p = pkl.load(f)
 
-    train_input_feat = p['features']['RGB']
+    train_input_feat = p['features'][args.modality]
     train_input_feat= torch.from_numpy(train_input_feat).type(torch.float32)
     train_input_feat = train_input_feat.to(device)
 
@@ -99,9 +98,9 @@ if __name__ == "__main__":
       num_frames = 5
       num_class = 8
       img_feature_dim = 1024
-      # model = Baseline_AvgPool_Classifier(img_feature_dim, num_class)
-      data = torch.mean(train_input_feat, 1)
-    
+      model = Baseline_AvgPool_Classifier(img_feature_dim, num_class)
+      model.to(device)
+
     train_dataset = PersonalizedDataset(train_input_feat, labels)
     train_loader = DataLoader(train_dataset, batch_size = 128, shuffle = True)
 
@@ -115,7 +114,7 @@ if __name__ == "__main__":
     with open(target_features_path, "rb") as f:
         p = pkl.load(f)
 
-    test_input_feat = p['features']['RGB']
+    test_input_feat = p['features'][args.modality]
     test_input_feat= torch.from_numpy(test_input_feat).type(torch.float32)
 
     with open(test_labels_path, "rb") as f:
